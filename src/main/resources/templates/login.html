@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login</title>
+    <meta charset="UTF-8"/>
+</head>
+<body>
+
+<h2>Login</h2>
+
+<!-- ❌ Invalid credentials -->
+<div th:if="${session.LOGIN_ERROR}">
+    <p style="color: red;">
+        Invalid username or password.
+    </p>
+    <!-- clear after display -->
+    <th:block th:text="${#session.removeAttribute('LOGIN_ERROR')}"></th:block>
+</div>
+
+<!-- ✅ Logout -->
+<div th:if="${session.LOGOUT_SUCCESS}">
+    <p style="color: green;">
+        You have been logged out successfully.
+    </p>
+    <th:block th:text="${#session.removeAttribute('LOGOUT_SUCCESS')}"></th:block>
+</div>
+
+<form method="post" action="/login">
+    <div>
+        <label>Email</label>
+        <input type="text" name="username" required />
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input type="password" name="password" required />
+    </div>
+
+    <button type="submit">Login</button>
+</form>
+
+</body>
+</html>
