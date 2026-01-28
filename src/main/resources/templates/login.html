@@ -1,43 +1,164 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Login</title>
+    <title>RBAC Demo | Login</title>
     <meta charset="UTF-8"/>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f6f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 380px;
+            background-color: #ffffff;
+            padding: 32px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .login-header h2 {
+            margin: 0;
+            font-size: 22px;
+            color: #333333;
+        }
+
+        .login-header p {
+            margin-top: 6px;
+            font-size: 14px;
+            color: #666666;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .error {
+            background-color: #fdecea;
+            color: #b71c1c;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background-color: #e6f4ea;
+            color: #1b5e20;
+            border: 1px solid #c3e6cb;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #444444;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #1976d2;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .login-button:hover {
+            background-color: #145ea8;
+        }
+
+        .footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #999999;
+        }
+    </style>
 </head>
+
 <body>
 
-<h2>Login</h2>
+<div class="login-card">
 
-<!-- ❌ Invalid credentials -->
-<div th:if="${session.LOGIN_ERROR}">
-    <p style="color: red;">
+    <div class="login-header">
+        <h2>RBAC Demo</h2>
+        <p>Sign in to continue</p>
+    </div>
+
+    <!-- ❌ Invalid credentials -->
+    <div th:if="${loginError}" class="message error">
         Invalid username or password.
-    </p>
-    <!-- clear after display -->
-    <th:block th:text="${#session.removeAttribute('LOGIN_ERROR')}"></th:block>
-</div>
+    </div>
 
-<!-- ✅ Logout -->
-<div th:if="${session.LOGOUT_SUCCESS}">
-    <p style="color: green;">
+    <!-- ✅ Logout -->
+    <div th:if="${logoutSuccess}" class="message success">
         You have been logged out successfully.
-    </p>
-    <th:block th:text="${#session.removeAttribute('LOGOUT_SUCCESS')}"></th:block>
+    </div>
+
+    <form method="post" action="/login">
+
+        <div class="form-group">
+            <label for="username">Email</label>
+            <input id="username"
+                   type="text"
+                   name="username"
+                   placeholder="Enter your email"
+                   required />
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input id="password"
+                   type="password"
+                   name="password"
+                   placeholder="Enter your password"
+                   required />
+        </div>
+
+        <button type="submit" class="login-button">
+            Sign In
+        </button>
+    </form>
+
+    <div class="footer">
+        © RBAC Demo Application
+    </div>
+
 </div>
-
-<form method="post" action="/login">
-    <div>
-        <label>Email</label>
-        <input type="text" name="username" required />
-    </div>
-
-    <div>
-        <label>Password</label>
-        <input type="password" name="password" required />
-    </div>
-
-    <button type="submit">Login</button>
-</form>
 
 </body>
 </html>
