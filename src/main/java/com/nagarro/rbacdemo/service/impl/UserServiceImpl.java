@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.UUID;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,14 +49,14 @@ public class UserServiceImpl implements UserService {
                             email);
 
                 });
-        user.setPassword(passwordEncoder.encode(newPassword));
+        //user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password reset successful for email={}", email);
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public void deleteUser(Long userId) {
+    public void deleteUser(UUID userId) {
 
         Authentication authentication =
                 SecurityContextHolder.getContext().getAuthentication();
