@@ -15,19 +15,13 @@ import com.nagarro.rbacdemo.service.UserService;
 import com.nagarro.rbacdemo.util.PasswordPolicyValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +47,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
     public void resetPassword(String email, String newPassword) {
         log.debug("Password reset initiated for email={}", email);
         if (!passwordPolicyValidator.isValid(newPassword)) {
@@ -67,13 +60,12 @@ public class UserServiceImpl implements UserService {
                             email);
 
                 });
-        //user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password reset successful for email={}", email);
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     public void deleteUser(UUID userId) {
 
         Authentication authentication =
@@ -109,7 +101,6 @@ public class UserServiceImpl implements UserService {
 
     // CRUD methods
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<UserResponse> findAll() {
         return userRepository.findAll()
                 .stream()
@@ -118,7 +109,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public UserResponse findById(UUID id) {
         User u = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -126,7 +116,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public UserResponse create(UserRequest request) {
         User u = new User();
@@ -146,7 +135,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public UserResponse update(UUID id, UserRequest request) {
         User u = userRepository.findById(id)
@@ -160,7 +148,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         User u = userRepository.findById(id)

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -28,14 +29,14 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
             );
         }
 
-//        // Keycloak JWT
-//        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-//        if (realmAccess != null) {
-//            List<String> kcRoles = (List<String>) realmAccess.get("roles");
-//            kcRoles.forEach(r ->
-//                    authorities.add(new SimpleGrantedAuthority(r))
-//            );
-//        }
+        // Keycloak JWT
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess != null) {
+            List<String> kcRoles = (List<String>) realmAccess.get("roles");
+            kcRoles.forEach(r ->
+                    authorities.add(new SimpleGrantedAuthority(r))
+            );
+        }
 
         return new JwtAuthenticationToken(jwt, authorities);
     }

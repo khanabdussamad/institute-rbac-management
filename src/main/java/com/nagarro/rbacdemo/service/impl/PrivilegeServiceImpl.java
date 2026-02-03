@@ -8,7 +8,6 @@ import com.nagarro.rbacdemo.repository.PrivilegeRepository;
 import com.nagarro.rbacdemo.service.PrivilegeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +27,6 @@ public class PrivilegeServiceImpl implements PrivilegeService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<PrivilegeResponse> findAll() {
         return privilegeRepository.findAll()
                 .stream()
@@ -37,7 +35,6 @@ public class PrivilegeServiceImpl implements PrivilegeService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public PrivilegeResponse findById(UUID id) {
         Privilege p = privilegeRepository.findById(id)
                 .orElseThrow(() -> new PrivilegeNotFoundException("Privilege not found with id: " + id));
@@ -45,7 +42,6 @@ public class PrivilegeServiceImpl implements PrivilegeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public PrivilegeResponse create(PrivilegeRequest request) {
         // ensure unique name
@@ -63,7 +59,6 @@ public class PrivilegeServiceImpl implements PrivilegeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public PrivilegeResponse update(UUID id, PrivilegeRequest request) {
         Privilege p = privilegeRepository.findById(id)
@@ -76,7 +71,6 @@ public class PrivilegeServiceImpl implements PrivilegeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         Privilege p = privilegeRepository.findById(id)

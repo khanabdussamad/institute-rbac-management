@@ -23,17 +23,16 @@ public class JwtDecoderConfig {
                         new SecretKeySpec(appSecret.getBytes(), "HmacSHA256")
                 ).build();
 
-//        NimbusJwtDecoder keycloakJwtDecoder =
-//                NimbusJwtDecoder.withJwkSetUri(
-//                        "http://localhost:8080/realms/university-realm/protocol/openid-connect/certs"
-//                ).build();
+        NimbusJwtDecoder keycloakJwtDecoder =
+                NimbusJwtDecoder.withJwkSetUri(
+                        "http://localhost:8080/realms/university-realm/protocol/openid-connect/certs"
+                ).build();
 
         return token -> {
             try {
                 return appJwtDecoder.decode(token);
-//                return keycloakJwtDecoder.decode(token);
             } catch (JwtException ex) {
-                return appJwtDecoder.decode(token);
+                return keycloakJwtDecoder.decode(token);
             }
         };
     }

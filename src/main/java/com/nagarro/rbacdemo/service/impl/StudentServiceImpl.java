@@ -14,7 +14,6 @@ import com.nagarro.rbacdemo.repository.UserRepository;
 import com.nagarro.rbacdemo.service.StudentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +40,6 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<StudentResponse> findAll() {
         return studentRepository.findAll()
                 .stream()
@@ -50,7 +48,6 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public StudentResponse findById(UUID id) {
         Student s = studentRepository.findById(id)
                 .orElseThrow(() -> new StudentNotFoundException("Student not found with id: " + id));
@@ -58,7 +55,6 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public StudentResponse create(StudentRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -77,7 +73,6 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public StudentResponse update(UUID id, StudentRequest request) {
         Student s = studentRepository.findById(id)
@@ -97,7 +92,6 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         Student s = studentRepository.findById(id)

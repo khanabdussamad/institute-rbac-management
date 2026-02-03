@@ -9,7 +9,6 @@ import com.nagarro.rbacdemo.repository.DepartmentRepository;
 import com.nagarro.rbacdemo.service.DepartmentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +28,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<DepartmentResponse> findAll() {
         return departmentRepository.findAll()
                 .stream()
@@ -38,7 +36,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public DepartmentResponse findById(UUID id) {
         Department dept = departmentRepository.findById(id)
                 .orElseThrow(() -> new DepartmentNotFoundException("Department not found with id: " + id));
@@ -46,7 +43,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public DepartmentResponse create(DepartmentRequest request) {
         Department dept = new Department();
@@ -57,7 +53,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public DepartmentResponse update(UUID id, DepartmentRequest request) {
         Department dept = departmentRepository.findById(id)
@@ -68,7 +63,6 @@ public class DepartmentServiceImpl implements DepartmentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         Department dept = departmentRepository.findById(id)

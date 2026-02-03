@@ -14,7 +14,6 @@ import com.nagarro.rbacdemo.repository.UserRepository;
 import com.nagarro.rbacdemo.service.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +40,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<EmployeeResponse> findAll() {
         return employeeRepository.findAll()
                 .stream()
@@ -50,7 +48,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public EmployeeResponse findById(UUID id) {
         Employee e = employeeRepository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException("Employee not found with id: " + id));
@@ -58,7 +55,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public EmployeeResponse create(EmployeeRequest request) {
         User user = userRepository.findById(request.getUserId())
@@ -77,7 +73,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public EmployeeResponse update(UUID id, EmployeeRequest request) {
         Employee e = employeeRepository.findById(id)
@@ -97,7 +92,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         Employee e = employeeRepository.findById(id)

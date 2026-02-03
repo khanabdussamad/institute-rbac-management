@@ -34,7 +34,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public List<RoleResponse> findAll() {
         return roleRepository.findAll()
                 .stream()
@@ -43,7 +42,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
     public RoleResponse findById(UUID id) {
         Role r = roleRepository.findById(id)
                 .orElseThrow(() -> new RoleNotFoundException("Role not found with id: " + id));
@@ -51,7 +49,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public RoleResponse create(RoleRequest request) {
         Role r = new Role();
@@ -63,7 +60,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public RoleResponse update(UUID id, RoleRequest request) {
         Role r = roleRepository.findById(id)
@@ -76,7 +72,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN')")
     @Transactional
     public void delete(UUID id) {
         Role r = roleRepository.findById(id)
