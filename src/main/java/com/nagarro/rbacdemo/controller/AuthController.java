@@ -47,7 +47,7 @@ public class AuthController {
                 .orElseGet(() -> tokenProvider.generateTokenFromAuth(authentication));
 
         Map<String, String> data = new HashMap<>();
-        data.put("token", token);
+        data.put("access_token", token);
 
         return ApiResponse.success(data);
     }

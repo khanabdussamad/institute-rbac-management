@@ -10,6 +10,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 
 @Slf4j
@@ -37,6 +38,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthorizationDeniedException ex) {
         return ApiResponse.error("You are not authorise for this", "E101", HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(NoResourceFoundException ex) {
+        return ApiResponse.error("No resource found", "E101", HttpStatus.NOT_FOUND);
     }
 
 
