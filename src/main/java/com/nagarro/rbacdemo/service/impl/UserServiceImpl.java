@@ -2,10 +2,14 @@ package com.nagarro.rbacdemo.service.impl;
 
 import com.nagarro.rbacdemo.dto.UserRequest;
 import com.nagarro.rbacdemo.dto.UserResponse;
+import com.nagarro.rbacdemo.entity.Privilege;
+import com.nagarro.rbacdemo.entity.Role;
 import com.nagarro.rbacdemo.entity.User;
 import com.nagarro.rbacdemo.exception.InvalidPasswordException;
 import com.nagarro.rbacdemo.exception.UserDeletionNotAllowedException;
 import com.nagarro.rbacdemo.exception.UserNotFoundException;
+import com.nagarro.rbacdemo.repository.PrivilegeRepository;
+import com.nagarro.rbacdemo.repository.RoleRepository;
 import com.nagarro.rbacdemo.repository.UserRepository;
 import com.nagarro.rbacdemo.service.UserService;
 import com.nagarro.rbacdemo.util.PasswordPolicyValidator;
@@ -18,8 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,13 +35,19 @@ public class UserServiceImpl implements UserService {
     private static final Logger log =
             LoggerFactory.getLogger(UserServiceImpl.class);
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PrivilegeRepository privilegeRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordPolicyValidator passwordPolicyValidator;
 
     public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           PrivilegeRepository privilegeRepository,
                            PasswordEncoder passwordEncoder,
                            PasswordPolicyValidator passwordPolicyValidator) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.privilegeRepository = privilegeRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordPolicyValidator = passwordPolicyValidator;
     }
@@ -121,6 +134,11 @@ public class UserServiceImpl implements UserService {
         u.setEmail(request.getEmail());
         u.setUserType(request.getUserType());
         u.setStatus(request.getStatus());
+        // Ensure roles and privileges are persisted / resolved first to avoid transient instance errors
+        Set<Role> incomingRoles = request.getRoles();
+        Set<Role> persistedRoles = ensureRolesPersisted(incomingRoles);
+        u.setRoles(persistedRoles);
+        u.setAuthProvider(request.getAuthProvider());
         // Note: password/auth fields intentionally left to service or registration flow
 
         User saved = userRepository.save(u);
@@ -153,4 +171,52 @@ public class UserServiceImpl implements UserService {
     private UserResponse toResponse(User u) {
         return new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getUserType(), u.getStatus());
     }
+
+    // --- helper methods ---
+    private Set<Role> ensureRolesPersisted(Set<Role> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return Set.of();
+        }
+        Set<Role> persisted = new HashSet<>();
+        for (Role r : roles) {
+            if (r == null) continue;
+            Optional<Role> existing = roleRepository.findByName(r.getName());
+            if (existing.isPresent()) {
+                persisted.add(existing.get());
+            } else {
+                Role newRole = new Role();
+                newRole.setName(r.getName());
+                newRole.setDescription(r.getDescription());
+                // handle privileges
+                Set<Privilege> incomingPrivileges = r.getPrivileges();
+                Set<Privilege> savedPrivileges = new HashSet<>();
+                if (incomingPrivileges != null) {
+                    for (Privilege p : incomingPrivileges) {
+                        if (p == null) continue;
+                        Optional<Privilege> existingP = privilegeRepository.findByName(p.getName());
+                        if (existingP.isPresent()) {
+                            savedPrivileges.add(existingP.get());
+                        } else {
+                            Privilege np = new Privilege();
+                            np.setName(p.getName());
+                            np.setResource(p.getResource());
+                            np.setAction(p.getAction());
+                            Privilege saved = privilegeRepository.save(np);
+                            savedPrivileges.add(saved);
+                        }
+                    }
+                }
+                newRole.setPrivileges(savedPrivileges);
+                Role savedRole = roleRepository.save(newRole);
+                persisted.add(savedRole);
+            }
+        }
+        return persisted;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findWithRolesByUsername(username);
+    }
 }
+

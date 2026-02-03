@@ -1,13 +1,6 @@
 package com.nagarro.rbacdemo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
@@ -55,11 +48,37 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToMany
+    @Column(name ="created_by", length = 100)
+    private String createdBy;
+
+    @Column(name ="updated_by", length = 100)
+    private String updatedBy;
+
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if(createdBy == null || createdBy.isEmpty()) {
+            createdBy = "SYSTEM";
+        }
+        if(updatedBy == null || updatedBy.isEmpty()) {
+            updatedBy = "SYSTEM";
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+        if(updatedBy == null || updatedBy.isEmpty()) {
+            updatedBy = "SYSTEM";
+        }
+    }
 }

@@ -4,6 +4,7 @@ import com.nagarro.rbacdemo.dto.ApiResponse;
 import com.nagarro.rbacdemo.dto.LoginRequest;
 import com.nagarro.rbacdemo.repository.UserRepository;
 import com.nagarro.rbacdemo.security.JwtTokenProvider;
+import com.nagarro.rbacdemo.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -23,14 +24,14 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public AuthController(AuthenticationManager authenticationManager,
                           JwtTokenProvider tokenProvider,
-                          UserRepository userRepository) {
+                          UserService userService) {
         this.authenticationManager = authenticationManager;
         this.tokenProvider = tokenProvider;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     @PostMapping("/login")
@@ -40,14 +41,13 @@ public class AuthController {
         );
 
         // load user entity to include username and email claims
-        var userOpt = userRepository.findByEmail(authentication.getName());
+        var userOpt = userService.findByUsername(authentication.getName());
 
         var token = userOpt.map(user -> tokenProvider.generateToken(user))
                 .orElseGet(() -> tokenProvider.generateTokenFromAuth(authentication));
 
         Map<String, String> data = new HashMap<>();
         data.put("token", token);
-        data.put("tokenType", "Bearer");
 
         return ApiResponse.success(data);
     }
