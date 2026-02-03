@@ -1,56 +1,55 @@
 package com.nagarro.rbacdemo.controller;
 
 import com.nagarro.rbacdemo.dto.ApiResponse;
-import com.nagarro.rbacdemo.dto.ResetPasswordRequest;
-import com.nagarro.rbacdemo.service.UserService;
-import jakarta.servlet.http.HttpSession;
+import com.nagarro.rbacdemo.dto.LoginRequest;
+import com.nagarro.rbacdemo.repository.UserRepository;
+import com.nagarro.rbacdemo.security.JwtTokenProvider;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
-@Controller
+@RestController
+@Tag(name = "Auth", description = "Operations about authentication")
+@RequestMapping("/auth")
 public class AuthController {
 
-    private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
+    private final UserRepository userRepository;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtTokenProvider tokenProvider,
+                          UserRepository userRepository) {
+        this.authenticationManager = authenticationManager;
+        this.tokenProvider = tokenProvider;
+        this.userRepository = userRepository;
     }
 
-    @GetMapping("/login")
-    public String loginPage(Model model, HttpSession session) {
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<Map<String, String>>> login(@Valid @RequestBody LoginRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
 
-        Object loginError = session.getAttribute("LOGIN_ERROR");
-        Object logoutSuccess = session.getAttribute("LOGOUT_SUCCESS");
+        // load user entity to include username and email claims
+        var userOpt = userRepository.findByEmail(authentication.getName());
 
-        if (loginError != null) {
-            model.addAttribute("loginError", true);
-            session.removeAttribute("LOGIN_ERROR");
-        }
+        var token = userOpt.map(user -> tokenProvider.generateToken(user))
+                .orElseGet(() -> tokenProvider.generateTokenFromAuth(authentication));
 
-        if (logoutSuccess != null) {
-            model.addAttribute("logoutSuccess", true);
-            session.removeAttribute("LOGOUT_SUCCESS");
-        }
+        Map<String, String> data = new HashMap<>();
+        data.put("token", token);
+        data.put("tokenType", "Bearer");
 
-        return "login";
-    }
-
-    @PostMapping("/reset-password")
-    @ResponseBody
-    public ResponseEntity<ApiResponse> resetPassword(@RequestBody ResetPasswordRequest request) {
-        userService.resetPassword(request.getEmail(), request.getNewPassword());
-        return ResponseEntity.ok(new ApiResponse("SUCCESS", "Password reset successful"));
-    }
-
-    @GetMapping("/access-denied")
-    public String accessDenied() {
-        return "access-denied";
+        return ApiResponse.success(data);
     }
 
 }
