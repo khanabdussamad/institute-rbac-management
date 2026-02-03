@@ -1,5 +1,7 @@
 package com.nagarro.rbacdemo.service.impl;
 
+import com.nagarro.rbacdemo.dto.UserRequest;
+import com.nagarro.rbacdemo.dto.UserResponse;
 import com.nagarro.rbacdemo.entity.User;
 import com.nagarro.rbacdemo.exception.InvalidPasswordException;
 import com.nagarro.rbacdemo.exception.UserDeletionNotAllowedException;
@@ -14,9 +16,12 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -87,5 +92,65 @@ public class UserServiceImpl implements UserService {
                 userToDelete.getEmail(),
                 currentUserEmail
         );
+    }
+
+    // CRUD methods
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public List<UserResponse> findAll() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public UserResponse findById(UUID id) {
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        return toResponse(u);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public UserResponse create(UserRequest request) {
+        User u = new User();
+        u.setUsername(request.getUsername());
+        u.setEmail(request.getEmail());
+        u.setUserType(request.getUserType());
+        u.setStatus(request.getStatus());
+        // Note: password/auth fields intentionally left to service or registration flow
+
+        User saved = userRepository.save(u);
+        return toResponse(saved);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public UserResponse update(UUID id, UserRequest request) {
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        u.setUsername(request.getUsername());
+        u.setEmail(request.getEmail());
+        u.setUserType(request.getUserType());
+        u.setStatus(request.getStatus());
+        User saved = userRepository.save(u);
+        return toResponse(saved);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public void delete(UUID id) {
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        userRepository.delete(u);
+    }
+
+    private UserResponse toResponse(User u) {
+        return new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getUserType(), u.getStatus());
     }
 }
