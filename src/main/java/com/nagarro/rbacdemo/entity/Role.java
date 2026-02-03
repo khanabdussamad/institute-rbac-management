@@ -1,18 +1,15 @@
 package com.nagarro.rbacdemo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
-
+@Getter
+@Setter
 @Entity
 @Table(name = "roles")
 public class Role {
@@ -36,37 +33,19 @@ public class Role {
             inverseJoinColumns = @JoinColumn(name = "privilege_id")
     )
     private Set<Privilege> privileges;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    // getters & setters
-    public UUID getId() {
-        return id;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Set<Privilege> getPrivileges() {
-        return privileges;
-    }
-
-    public void setPrivileges(Set<Privilege> privileges) {
-        this.privileges = privileges;
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 }

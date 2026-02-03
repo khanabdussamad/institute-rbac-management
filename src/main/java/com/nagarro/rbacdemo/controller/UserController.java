@@ -5,6 +5,7 @@ import com.nagarro.rbacdemo.dto.UserResponse;
 import com.nagarro.rbacdemo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,7 +22,9 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN','ADMIN','USER')")
     public ResponseEntity<List<UserResponse>> getAll() {
+
         return ResponseEntity.ok(userService.findAll());
     }
 

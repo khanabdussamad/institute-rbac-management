@@ -40,8 +40,8 @@ public class JwtTokenProvider {
     public String generateToken(User user) {
         Instant now = Instant.now();
         var roles = user.getRoles() == null ? "" : user.getRoles().stream()
-                .map(r -> r.getName())
-                .collect(Collectors.joining(","));
+                .map(r -> "ROLE_"+r.getName())
+                .collect(Collectors.toList());
 
         return Jwts.builder()
                 .setSubject(user.getEmail())
