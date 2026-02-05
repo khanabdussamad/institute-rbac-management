@@ -54,4 +54,14 @@ public class UserRequest {
     @JsonProperty("roles")
     private Set<Role> roles;
 
+    @NotBlank
+    @Size(max = 255)
+    @JsonProperty("first_name")
+    private String firstName;
+
+    @NotBlank
+    @Size(max = 255)
+    @JsonProperty("last_name")
+    private String lastName;
+
 }

@@ -1,7 +1,9 @@
 package com.nagarro.rbacdemo.controller;
 
+import com.nagarro.rbacdemo.dto.ApiResponse;
 import com.nagarro.rbacdemo.dto.UserRequest;
 import com.nagarro.rbacdemo.dto.UserResponse;
+import com.nagarro.rbacdemo.entity.User;
 import com.nagarro.rbacdemo.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,7 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ROLE_SUPER_ADMIN', 'ROLE_USER')")
     public ResponseEntity<List<UserResponse>> getAll() {
 
         return ResponseEntity.ok(userService.findAll());
@@ -34,9 +36,17 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> create(@RequestBody UserRequest request) {
-        UserResponse created = userService.create(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    public ResponseEntity<ApiResponse<UserResponse>> create(@RequestBody UserRequest request) {
+        User created = userService.create(request);
+        UserResponse userResponse = UserResponse.builder()
+                .email(created.getEmail())
+                .username(created.getUsername())
+                .userType(created.getUserType())
+                .firstName(created.getFirstName())
+                .lastName(created.getLastName())
+                .status(created.getStatus())
+                .build();
+        return ApiResponse.success(userResponse);
     }
 
     @PutMapping("/{id}")

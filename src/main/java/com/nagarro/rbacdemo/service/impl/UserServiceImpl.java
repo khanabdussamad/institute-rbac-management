@@ -117,7 +117,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponse create(UserRequest request) {
+    public User create(UserRequest request) {
         User u = new User();
         u.setUsername(request.getUsername());
         u.setEmail(request.getEmail());
@@ -130,8 +130,7 @@ public class UserServiceImpl implements UserService {
         u.setAuthProvider(request.getAuthProvider());
         // Note: password/auth fields intentionally left to service or registration flow
 
-        User saved = userRepository.save(u);
-        return toResponse(saved);
+        return userRepository.save(u);
     }
 
     @Override
@@ -156,7 +155,15 @@ public class UserServiceImpl implements UserService {
     }
 
     private UserResponse toResponse(User u) {
-        return new UserResponse(u.getId(), u.getUsername(), u.getEmail(), u.getUserType(), u.getStatus());
+        return UserResponse.builder()
+                .id(u.getId())
+                .username(u.getUsername())
+                .email(u.getEmail())
+                .userType(u.getUserType())
+                .firstName(u.getFirstName())
+                .lastName(u.getLastName())
+                .status(u.getStatus())
+                .build();
     }
 
     // --- helper methods ---

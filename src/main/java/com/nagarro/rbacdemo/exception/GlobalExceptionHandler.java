@@ -8,6 +8,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -37,7 +39,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthorizationDeniedException ex) {
-        return ApiResponse.error("You are not authorise for this", "E101", HttpStatus.UNAUTHORIZED);
+        return ApiResponse.error("You are not authorise for this", "E101", HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
@@ -45,6 +47,19 @@ public class GlobalExceptionHandler {
         return ApiResponse.error("No resource found", "E101", HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingRequestHeaderException(MissingRequestHeaderException ex) {
+        return ApiResponse.error("Authorization header is missing", "E400", HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(BadJwtException.class)
+    public ResponseEntity<ApiResponse<Void>> handleBadJwtException(BadJwtException ex) {
+        return ApiResponse.error("Token is invalid", "E400", HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(TokenRefreshException.class)
+    public ResponseEntity<ApiResponse<Void>> handleTokenRefreshException(TokenRefreshException ex) {
+        return ApiResponse.error("Refresh Token is invalid", "E400", HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneric(Exception ex) {

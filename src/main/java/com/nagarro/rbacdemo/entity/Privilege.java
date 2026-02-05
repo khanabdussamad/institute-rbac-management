@@ -29,6 +29,9 @@ public class Privilege {
     @Column(nullable = false, length = 50)
     private String action;
 
+    @Column(nullable = true, length = 50)
+    private String description;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

@@ -19,7 +19,7 @@ public interface UserService {
 
     UserResponse findById(UUID id);
 
-    UserResponse create(UserRequest request);
+    User create(UserRequest request);
 
     UserResponse update(UUID id, UserRequest request);
 
